@@ -12,10 +12,10 @@ static void readln (struct berval *cred, char delim, FILE *f)
     size_t len_allocated = 0;
     ssize_t len_read = getdelim(&line, &len_allocated, delim, f);
     if (len_read == -1) {
-        exit(2);
+        exit(__LINE__);
     }
     if (line[len_read - 1] != delim) {
-        exit(3);
+        exit(__LINE__);
     }
     line[len_read - 1] = '\0';
 
@@ -44,8 +44,9 @@ int main (int argc, char **argv)
 
     // ensure username contains lower case ASCII letters only
     for (size_t i = 0; i < user.bv_len; ++i) {
-        if (!('a' <= user.bv_val[i] && user.bv_val[i] <= 'z')) {
-            exit(1);
+        if (!('a' <= user.bv_val[i] && user.bv_val[i] <= 'z') &&
+            !('0' <= user.bv_val[i] && user.bv_val[i] <= '9'))  {
+            exit(__LINE__);
         }
     }
 
@@ -53,14 +54,14 @@ int main (int argc, char **argv)
     LDAP *ldap;
     int res = ldap_initialize(&ldap, SERVER);
     if (res != LDAP_SUCCESS) {
-        exit(4);
+        exit(__LINE__);
     }
 
     // set protocol version
     int version = LDAP_VERSION3;
     res = ldap_set_option(ldap, LDAP_OPT_PROTOCOL_VERSION, &version);
     if (res != LDAP_SUCCESS) {
-        exit(4);
+        exit(__LINE__);
     }
 
     // concat group and username
@@ -74,7 +75,7 @@ int main (int argc, char **argv)
     // connect to server (using ldaps, so no need for DIGEST-MD5)
     res = ldap_sasl_bind_s(ldap, dn, NULL, &pass, NULL, NULL, NULL);
     if (res != LDAP_SUCCESS) {
-        exit(1);
+        exit(__LINE__);
     }
 
     int result = 0;
@@ -83,13 +84,13 @@ int main (int argc, char **argv)
     struct berval *authzid;
     res = ldap_whoami_s(ldap, &authzid, NULL, NULL);
     if (res != LDAP_SUCCESS) {
-        result = 1;
+        result = __LINE__;
     }
 
     // close connection
     res = ldap_unbind_ext_s(ldap, NULL, NULL);
     if (res != LDAP_SUCCESS) {
-        exit(4);
+        exit(__LINE__);
     }
 
     exit(result);
