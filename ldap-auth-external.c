@@ -42,6 +42,13 @@ int main (int argc, char **argv)
     readln(&user, '\n', stdin);
     readln(&pass, '\n', stdin);
 
+    if (user.bv_len == 0) {
+        exit(__LINE__);
+    }
+    if (pass.bv_len == 0) {
+        exit(__LINE__);
+    }
+
     // ensure username contains lower case ASCII letters only
     for (size_t i = 0; i < user.bv_len; ++i) {
         if (!('a' <= user.bv_val[i] && user.bv_val[i] <= 'z') &&
